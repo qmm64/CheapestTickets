@@ -1,5 +1,5 @@
 ﻿
 namespace CheapestVacationTickets
 {
-    internal record FlightSearchResult(bool isSucces, TicketData ticket = null);
+    internal record FlightSearchResult(bool IsSucces, TicketData Ticket = null);
 }
