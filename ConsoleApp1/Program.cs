@@ -1,5 +1,4 @@
 ﻿using CheapestVacationTickets;
-using System.Text;
 using System.Text.Json;
 
 class Program
@@ -9,16 +8,16 @@ class Program
 
     static async Task Main(string[] args)
     {
-        //routes.Add(new FlightRoute("OVB", "BJS", new DateOnly(2025, 9, 18)));
-        //routes.Add(new FlightRoute("BJS", "TYO", new DateOnly(2025, 9, 22)));
-        //routes.Add(new FlightRoute("OSA", "SEL", new DateOnly(2025, 9, 30)));
-        //routes.Add(new FlightRoute("SEL", "OVB", new DateOnly(2025, 10, 6)));
-        AddFlights();
+        routes.Add(new FlightRoute("OVB", "SEL", new DateOnly(2025, 9, 19)));
+        routes.Add(new FlightRoute("SEL", "OSA", new DateOnly(2025, 9, 21)));
+        routes.Add(new FlightRoute("TYO", "BJS", new DateOnly(2025, 10, 2)));
+        routes.Add(new FlightRoute("BJS", "OVB", new DateOnly(2025, 10, 5)));
+        //AddFlights();
 
         try
         {
             Dictionary<string,decimal> prices = new Dictionary<string,decimal>();
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 90; i++)
             {
                 await CalculatePriceOfDateDeparture(prices);
             }
@@ -39,12 +38,12 @@ class Program
             var results = await Task.WhenAll(tasks);
             if (results.All(x => x.IsSucces))
             {
-                prices.Add(GetDate(routes[0].Date), results.Sum(x => x.Ticket.Price));
-                Console.WriteLine($"Сумарная стоимость вылета {GetDate(routes[0].Date)}: {prices[GetDate(routes[0].Date)]}");
+                prices.Add(GetDate(routes[0].Date), results.Sum(x => x.Ticket.price));
+                Console.WriteLine($"Суммарная стоимость вылета {GetDate(routes[0].Date)}: {prices[GetDate(routes[0].Date)]}");
             }
             else
             {
-                Console.WriteLine("По какому-либо перелёту отстутствуют данные о цене");
+                Console.WriteLine("По какому-либо перелёту отсутствуют данные о цене");
             }
             AddDayToTheDate();
         }
@@ -66,11 +65,11 @@ class Program
                 response.EnsureSuccessStatusCode();
                 string json = await response.Content.ReadAsStringAsync();
                 var data = JsonSerializer.Deserialize<AviasalesResponse>(json);
-                if (data.Data == null || data.Data.Length == 0)
+                if (data.data == null || data.data.Length == 0)
                 {
                     return new FlightSearchResult(false);
                 }
-                return new FlightSearchResult(true, data.Data[0]);
+                return new FlightSearchResult(true, data.data[0]);
             }
         }
         catch (Exception ex)
