@@ -8,11 +8,11 @@ class Program
 
     static async Task Main(string[] args)
     {
-        routes.Add(new FlightRoute("OVB", "SEL", new DateOnly(2025, 9, 19)));
-        routes.Add(new FlightRoute("SEL", "OSA", new DateOnly(2025, 9, 21)));
-        routes.Add(new FlightRoute("TYO", "BJS", new DateOnly(2025, 10, 2)));
-        routes.Add(new FlightRoute("BJS", "OVB", new DateOnly(2025, 10, 5)));
-        //AddFlights();
+        //routes.Add(new FlightRoute("OVB", "SEL", new DateOnly(2025, 9, 19)));
+        //routes.Add(new FlightRoute("SEL", "OSA", new DateOnly(2025, 9, 22)));
+        //routes.Add(new FlightRoute("TYO", "BJS", new DateOnly(2025, 10, 2)));
+        //routes.Add(new FlightRoute("BJS", "OVB", new DateOnly(2025, 10, 5)));
+        AddFlights();
 
         try
         {
@@ -91,8 +91,7 @@ class Program
 
     static void AddFlights()
     {
-        Console.WriteLine("Введите количество перелётов");
-        int countOfFlights = int.Parse(Console.ReadLine());
+        int countOfFlights = RequestHandler.GetCount("Введите количество перелётов");
         for (int i = 0; i < countOfFlights; i++)
         {
             routes.Add(CreateFlight());
@@ -102,12 +101,9 @@ class Program
     static FlightRoute CreateFlight()
     {
         FlightRoute flight = new FlightRoute();
-        Console.WriteLine("Введите аэропорт вылета");
-        flight.Origin = Console.ReadLine();
-        Console.WriteLine("Введите аэропорт прилёта");
-        flight.Destination = Console.ReadLine();
-        Console.WriteLine("Введите дату вылета в формате yyyy-mm-dd");
-        flight.Date = DateOnly.Parse(Console.ReadLine());
+        flight.Origin = RequestHandler.GetAirportCode("Введите аэропорт вылета");
+        flight.Destination = RequestHandler.GetAirportCode("Введите аэропорт прилёта");
+        flight.Date = RequestHandler.GetDate("Введите дату вылета в формате yyyy-mm-dd");
         return flight;
     }
 
