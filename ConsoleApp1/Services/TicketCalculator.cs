@@ -18,8 +18,8 @@ namespace CheapestTickets.Server.Services
 
             for (int i = 0; i < days; i++)
             {
-                await CalculatePriceOfDateDeparture(routes, prices);
-                AddDayToTheDate(routes);
+                var shiftedRoutes = routes.Select(r => new FlightRoute(r.Origin, r.Destination, r.Date.AddDays(i))).ToList();
+                await CalculatePriceOfDateDeparture(shiftedRoutes, prices);
             }
 
             return prices;
@@ -29,15 +29,16 @@ namespace CheapestTickets.Server.Services
         {
             var tasks = routes.Select(x => GetLowestPriceAsync(x.Origin, x.Destination, GetDate(x.Date)));
             var results = await Task.WhenAll(tasks);
+            string dateKey = GetDate(routes[0].Date);
 
             if (results.All(x => x.IsSucces))
             {
-                prices.Add(GetDate(routes[0].Date), results.Sum(x => x.Ticket.price));
-                Console.WriteLine($"Суммарная стоимость вылета {GetDate(routes[0].Date)}: {prices[GetDate(routes[0].Date)]}");
+                prices[dateKey] = results.Sum(x => x.Ticket.price);
+                Console.WriteLine($"Суммарная стоимость вылета {dateKey}: {prices[dateKey]}");
             }
             else
             {
-                prices.Add(GetDate(routes[0].Date), -1);
+                prices[dateKey] = -1;
             }
         }
 
@@ -50,13 +51,12 @@ namespace CheapestTickets.Server.Services
                     string url = $"https://api.travelpayouts.com/aviasales/v3/prices_for_dates?origin={origin}&destination={destination}&departure_at={departDate}&currency=rub&sorting=price&direct=false&limit=1&token={apiToken}";
                     var response = await client.GetAsync(url);
                     response.EnsureSuccessStatusCode();
-
                     string json = await response.Content.ReadAsStringAsync();
                     var data = JsonSerializer.Deserialize<AviasalesResponse>(json);
-
                     if (data.data == null || data.data.Length == 0)
+                    {
                         return new FlightSearchResult(false);
-
+                    }
                     return new FlightSearchResult(true, data.data[0]);
                 }
             }
@@ -69,14 +69,6 @@ namespace CheapestTickets.Server.Services
         private string GetDate(DateOnly date)
         {
             return date.ToString("yyyy-MM-dd");
-        }
-
-        private void AddDayToTheDate(List<FlightRoute> routes)
-        {
-            foreach (var flight in routes)
-            {
-                flight.Date = flight.Date.AddDays(1);
-            }
         }
     }
 }
