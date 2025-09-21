@@ -1,5 +1,5 @@
 ﻿
-namespace CheapestVacationTickets
+namespace CheapestTickets
 {
     internal static class RequestHandler
     {

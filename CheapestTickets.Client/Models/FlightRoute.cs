@@ -1,5 +1,5 @@
 ﻿
-namespace CheapestTickets.Server.Models
+namespace CheapestTickets.Client.Models
 {
     internal class FlightRoute
     {

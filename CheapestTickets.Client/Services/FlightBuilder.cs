@@ -1,10 +1,19 @@
-﻿using CheapestTickets.Server.Models;
-using CheapestVacationTickets;
+﻿using CheapestTickets.Client.Models;
 
-namespace CheapestTickets.Server.Services
+namespace CheapestTickets.Client.Services
 {
     internal static class FlightBuilder
     {
+        public static List<FlightRoute> AddFlights() 
+        { 
+            List<FlightRoute> routes = new List<FlightRoute>();
+            int countOfFlights = RequestHandler.GetCount("Введите количество перелётов"); 
+            for (int i = 0; i < countOfFlights; i++) 
+            { 
+                routes.Add(CreateFlight()); 
+            } 
+            return routes;
+        }
         public static FlightRoute CreateFlight() 
         { 
             FlightRoute flight = new FlightRoute(); 

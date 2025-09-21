@@ -1,4 +1,4 @@
-﻿using CheapestTickets.Server.Models;
+﻿using CheapestTickets.Client.Models;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -16,7 +16,7 @@ namespace CheapestTickets.Client.Services
             _port = port;
         }
 
-        public async Task<FlightResponse?> SendRequestAsync(FlightRequest request)
+        public async Task<FlightResponse> SendRequestAsync(FlightRequest request)
         {
             try
             {
