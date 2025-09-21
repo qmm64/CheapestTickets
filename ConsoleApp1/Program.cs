@@ -8,16 +8,16 @@ class Program
 
     static async Task Main(string[] args)
     {
-        //routes.Add(new FlightRoute("OVB", "SEL", new DateOnly(2025, 9, 19)));
-        //routes.Add(new FlightRoute("SEL", "OSA", new DateOnly(2025, 9, 22)));
-        //routes.Add(new FlightRoute("TYO", "BJS", new DateOnly(2025, 10, 2)));
-        //routes.Add(new FlightRoute("BJS", "OVB", new DateOnly(2025, 10, 5)));
-        AddFlights();
+        routes.Add(new FlightRoute("OVB", "SEL", new DateOnly(2025, 9, 21)));
+        routes.Add(new FlightRoute("SEL", "OSA", new DateOnly(2025, 9, 24)));
+        routes.Add(new FlightRoute("TYO", "BJS", new DateOnly(2025, 10, 4)));
+        routes.Add(new FlightRoute("BJS", "OVB", new DateOnly(2025, 10, 7)));
+        //AddFlights();
 
         try
         {
             Dictionary<string,decimal> prices = new Dictionary<string,decimal>();
-            for (int i = 0; i < 90; i++)
+            for (int i = 0; i < 120; i++)
             {
                 await CalculatePriceOfDateDeparture(prices);
             }
