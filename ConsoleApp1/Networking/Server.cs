@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace CheapestVacationTickets.Server.Networking
+namespace CheapestTickets.Server.Networking
 {
     internal class Server
     {

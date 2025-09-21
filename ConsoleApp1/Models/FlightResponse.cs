@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace CheapestVacationTickets.Server.Models
+﻿
+namespace CheapestTickets.Server.Models
 {
     internal class FlightResponse
     {

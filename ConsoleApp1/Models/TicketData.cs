@@ -1,4 +1,5 @@
-﻿namespace CheapestTickets.Server.Models
+﻿
+namespace CheapestTickets.Server.Models
 {
     internal class TicketData
     {

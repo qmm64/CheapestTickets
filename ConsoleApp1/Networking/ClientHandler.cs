@@ -1,11 +1,10 @@
 ﻿using CheapestTickets.Server.Models;
 using CheapestTickets.Server.Services;
-using CheapestVacationTickets.Server.Models;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 
-namespace CheapestVacationTickets.Server.Networking
+namespace CheapestTickets.Server.Networking
 {
     internal class ClientHandler
     {

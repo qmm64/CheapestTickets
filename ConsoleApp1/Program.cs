@@ -1,42 +1,17 @@
-﻿using CheapestTickets.Server.Models;
-using CheapestTickets.Server.Services;
+﻿using CheapestTickets.Server.Services;
 
-namespace CheapestVacationTickets.Server
+namespace CheapestTickets.Server
 {
     class Program
     {
         static async Task Main(string[] args)
         {
+            Console.WriteLine("Запуск сервера...");
             string apiToken = "713190d0855f15d4b2a9dd08b6417da9";
             var calculator = new TicketCalculator(apiToken);
-
-            var routes = new List<FlightRoute>
-            {
-                new FlightRoute("OVB", "SEL", new DateOnly(2025, 9, 21)),
-                new FlightRoute("SEL", "OSA", new DateOnly(2025, 9, 24)),
-                new FlightRoute("TYO", "BJS", new DateOnly(2025, 10, 4)),
-                new FlightRoute("BJS", "OVB", new DateOnly(2025, 10, 7))
-            };
-
-            try
-            {
-                Dictionary<string, decimal> prices = await calculator.CalculatePricesAsync(routes,5);
-                var validPrices = prices.Where(p => p.Value >= 0).ToList();
-                if (validPrices.Count > 0)
-                {
-                    var minPrice = validPrices.Min(p => p.Value);
-                    var minDate = validPrices.First(p => p.Value == minPrice).Key;
-                    Console.WriteLine($"Дешевле всего вылетать {minDate} - {minPrice} руб");
-                }
-                else
-                {
-                    Console.WriteLine("Нет доступных данных о ценах");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка при расчёте: {ex.Message}");
-            }
+            int port = 5000;
+            var server = new Networking.Server(port, calculator);
+            await server.StartAsync();
         }
     }
 }
