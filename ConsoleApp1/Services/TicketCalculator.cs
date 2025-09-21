@@ -1,7 +1,7 @@
-﻿using CheapestVacationTickets;
+﻿using CheapestTickets.Server.Models;
 using System.Text.Json;
 
-namespace CheapestTickets.Server
+namespace CheapestTickets.Server.Services
 {
     internal class TicketCalculator
     {

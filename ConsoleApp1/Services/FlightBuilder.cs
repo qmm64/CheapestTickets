@@ -1,6 +1,6 @@
-﻿using CheapestVacationTickets;
+﻿using CheapestTickets.Server.Models;
 
-namespace CheapestTickets.Server
+namespace CheapestTickets.Server.Services
 {
     internal static class FlightBuilder
     {
