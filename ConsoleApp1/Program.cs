@@ -1,8 +1,5 @@
 ﻿using CheapestTickets.Server.Models;
-using CheapestVacationTickets.Server.Services;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using CheapestTickets.Server.Services;
 
 namespace CheapestVacationTickets.Server
 {
