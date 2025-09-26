@@ -1,6 +1,6 @@
 ﻿using CheapestTickets.Server.Models;
 using CheapestTickets.Server.Services;
-using OpenQA.Selenium.Support.UI;
+using CheapestTickets.Server.Models.Responses;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;

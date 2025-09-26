@@ -9,10 +9,10 @@ namespace CheapestTickets.Client
         {
             var routes = new List<FlightRoute>
             {
-                new FlightRoute("OVB", "SEL", new DateOnly(2025, 9, 22)),
-                new FlightRoute("SEL", "OSA", new DateOnly(2025, 9, 25)),
-                new FlightRoute("TYO", "BJS", new DateOnly(2025, 10, 5)),
-                new FlightRoute("BJS", "OVB", new DateOnly(2025, 10, 8))
+                new FlightRoute("OVB", "SEL", new DateOnly(2025, 9, 27)),
+                new FlightRoute("SEL", "OSA", new DateOnly(2025, 9, 30)),
+                new FlightRoute("TYO", "BJS", new DateOnly(2025, 10, 10)),
+                new FlightRoute("BJS", "OVB", new DateOnly(2025, 10, 13))
             };
 
             //var routes = FlightBuilder.AddFlights();

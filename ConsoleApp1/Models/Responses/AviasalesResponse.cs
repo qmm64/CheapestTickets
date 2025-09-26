@@ -1,5 +1,4 @@
-﻿
-namespace CheapestTickets.Server.Models
+﻿namespace CheapestTickets.Server.Models.Responses
 {
     internal class AviasalesResponse
     {

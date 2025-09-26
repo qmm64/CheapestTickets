@@ -1,4 +1,5 @@
 ﻿using CheapestTickets.Server.Models;
+using CheapestTickets.Server.Models.Responses;
 using System.Text.Json;
 
 namespace CheapestTickets.Server.Services
@@ -50,7 +51,7 @@ namespace CheapestTickets.Server.Services
             return errors.First();
         }
 
-        private async Task<FlightSearchResult> GetLowestPriceAsync(string origin, string destination, string departDate)
+        private async Task<FlightSearchResponse> GetLowestPriceAsync(string origin, string destination, string departDate)
         {
             try
             {
@@ -62,22 +63,22 @@ namespace CheapestTickets.Server.Services
                     var data = JsonSerializer.Deserialize<AviasalesResponse>(json);
                     if (data.data == null || data.data.Length == 0)
                     {
-                        return new FlightSearchResult("Не удалось получить данные о рейсе");
+                        return new FlightSearchResponse("Не удалось получить данные о рейсе");
                     }
-                    return new FlightSearchResult(data.data[0]);
+                    return new FlightSearchResponse(data.data[0]);
                 }
             }
             catch (HttpRequestException)
             {
-                return new FlightSearchResult("Не удалось подключиться к API");
+                return new FlightSearchResponse("Не удалось подключиться к API");
             }
             catch (TaskCanceledException)
             {
-                return new FlightSearchResult("Время ожидания ответа от API истекло");
+                return new FlightSearchResponse("Время ожидания ответа от API истекло");
             }
             catch (Exception ex) 
             {
-                return new FlightSearchResult(ex.Message);
+                return new FlightSearchResponse(ex.Message);
             }
         }
 

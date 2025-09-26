@@ -1,18 +1,17 @@
-﻿
-namespace CheapestTickets.Server.Models
+﻿namespace CheapestTickets.Server.Models.Responses
 {
-    internal class FlightSearchResult
+    internal class FlightSearchResponse
     {
         public bool IsSucces { get; }
         public string? Error { get; }
         public TicketData? Ticket { get; }
 
-        public FlightSearchResult(TicketData ticketData)
+        public FlightSearchResponse(TicketData ticketData)
         {
             IsSucces = true;
             Ticket = ticketData;
         }
-        public FlightSearchResult(string error) 
+        public FlightSearchResponse(string error) 
         {
             IsSucces = false;
             Error = error;
