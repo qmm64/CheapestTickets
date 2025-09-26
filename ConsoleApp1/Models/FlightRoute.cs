@@ -12,6 +12,5 @@ namespace CheapestTickets.Server.Models
             this.Destination = Destination;
             this.Date = Date;
         }
-        public FlightRoute() { }
     }
 }
