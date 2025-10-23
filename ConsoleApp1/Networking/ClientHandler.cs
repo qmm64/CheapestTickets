@@ -20,29 +20,35 @@ namespace CheapestTickets.Server.Networking
 
         public async Task ProcessAsync()
         {
+            string clientInfo = _client.Client.RemoteEndPoint?.ToString() ?? "неизвестный клиент";
             using NetworkStream stream = _client.GetStream();
+
             try
             {
                 string json = await ReceiveMessageAsync(stream);
+                Logger.Info("Получен запрос от клиента", clientInfo);
                 var request = JsonSerializer.Deserialize<FlightRequest>(json);
                 if (request?.Routes == null || request.Routes.Count == 0)
                 {
                     await SendErrorAsync(stream, "Маршруты не переданы на сервер");
+                    Logger.Warning("Клиент отправил пустой запрос", clientInfo);
                     return;
                 }
                 var calculateResponse = await _calculator.CalculatePricesAsync(request.Routes, request.Days);
                 if (!string.IsNullOrEmpty(calculateResponse.Error))
                 {
                     await SendErrorAsync(stream, calculateResponse.Error);
+                    Logger.Warning($"Ошибка вычисления: {calculateResponse.Error}", clientInfo);
                     return;
                 }
                 var validPrices = calculateResponse.prices.Where(p => p.Value >= 0).ToList();
                 if (validPrices.Count == 0)
                 {
                     await SendErrorAsync(stream, "Нет доступных маршрутов по заданным параметрам");
+                    Logger.Warning("Не найдено подходящих маршрутов", clientInfo);
                     return;
                 }
-                var minPair = validPrices.Where(p => p.Value >= 0).OrderBy(p => p.Value).First();
+                var minPair = validPrices.OrderBy(p => p.Value).First();
                 var response = new FlightResponse
                 {
                     MinPrice = minPair.Value,
@@ -54,15 +60,16 @@ namespace CheapestTickets.Server.Networking
                 }
                 string responseJson = JsonSerializer.Serialize(response);
                 await SendMessageAsync(stream, responseJson);
+                Logger.Info($"Результат отправлен клиенту (минимум {minPair.Value}₽, дата {minPair.Key})", clientInfo);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка обработки клиента: {ex.Message}");
+                Logger.Error($"Ошибка обработки клиента: {ex.Message}", clientInfo);
             }
             finally
             {
                 _client.Close();
-                Console.WriteLine("Клиент отключился");
+                Logger.Info("Клиент отключился", clientInfo);
             }
         }
 
@@ -79,13 +86,13 @@ namespace CheapestTickets.Server.Networking
             await stream.WriteAsync(data, 0, data.Length);
         }
 
-        private async Task SendErrorAsync(NetworkStream stream,string error)
+        private async Task SendErrorAsync(NetworkStream stream, string error)
         {
             var response = new FlightResponse
             {
                 Error = error
             };
-            await SendMessageAsync(stream,JsonSerializer.Serialize(response));
+            await SendMessageAsync(stream, JsonSerializer.Serialize(response));
         }
     }
 }

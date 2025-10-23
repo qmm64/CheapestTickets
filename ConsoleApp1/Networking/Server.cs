@@ -19,19 +19,22 @@ namespace CheapestTickets.Server.Networking
         {
             TcpListener listener = new TcpListener(IPAddress.Any, _port);
             listener.Start();
-            Console.WriteLine($"Сервер запущен на порту {_port}...");
+
+            Logger.Info($"Сервер запущен на порту {_port}");
+
             while (true)
             {
                 try
                 {
                     TcpClient client = await listener.AcceptTcpClientAsync();
-                    Console.WriteLine("Клиент подключился!");
+                    string clientInfo = client.Client.RemoteEndPoint?.ToString() ?? "неизвестный клиент";
+                    Logger.Info("Клиент подключился", clientInfo);
                     var handler = new ClientHandler(client, _calculator);
                     _ = handler.ProcessAsync();
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Ошибка при приёме клиента: {ex.Message}");
+                    Logger.Error($"Ошибка при приёме клиента: {ex.Message}");
                 }
             }
         }
