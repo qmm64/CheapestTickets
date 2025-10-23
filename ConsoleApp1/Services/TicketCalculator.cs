@@ -1,4 +1,5 @@
 ﻿using CheapestTickets.Server.Models;
+using CheapestTickets.Server.Models.Responses;
 using System.Text.Json;
 
 namespace CheapestTickets.Server.Services
@@ -12,20 +13,23 @@ namespace CheapestTickets.Server.Services
             apiToken = token;
         }
 
-        public async Task<Dictionary<string, decimal>> CalculatePricesAsync(List<FlightRoute> routes, int days)
+        public async Task<CalculateResponse> CalculatePricesAsync(List<FlightRoute> routes, int days)
         {
             Dictionary<string, decimal> prices = new Dictionary<string, decimal>();
 
             for (int i = 0; i < days; i++)
             {
                 var shiftedRoutes = routes.Select(r => new FlightRoute(r.Origin, r.Destination, r.Date.AddDays(i))).ToList();
-                await CalculatePriceOfDateDeparture(shiftedRoutes, prices);
+                var calculateResult = await CalculatePriceOfDateDeparture(shiftedRoutes, prices);
+                if (!string.IsNullOrEmpty(calculateResult))
+                {
+                    return new CalculateResponse(null, calculateResult);
+                }
             }
-
-            return prices;
+            return new CalculateResponse(prices);
         }
 
-        private async Task CalculatePriceOfDateDeparture(List<FlightRoute> routes, Dictionary<string, decimal> prices)
+        private async Task<string> CalculatePriceOfDateDeparture(List<FlightRoute> routes, Dictionary<string, decimal> prices)
         {
             var tasks = routes.Select(x => GetLowestPriceAsync(x.Origin, x.Destination, GetDate(x.Date)));
             var results = await Task.WhenAll(tasks);
@@ -35,14 +39,19 @@ namespace CheapestTickets.Server.Services
             {
                 prices[dateKey] = results.Sum(x => x.Ticket.price);
                 Console.WriteLine($"Суммарная стоимость вылета {dateKey}: {prices[dateKey]}");
+                return "";
             }
-            else
+            prices[dateKey] = -1;
+            var errors = results.Where(r=>!r.IsSucces && !string.IsNullOrEmpty(r.Error)).Select(r=>r.Error).Distinct();
+            if (errors.Any())
             {
-                prices[dateKey] = -1;
+                string errorMsg = string.Join("; ", errors);
+                return errorMsg;
             }
+            return errors.First();
         }
 
-        private async Task<FlightSearchResult> GetLowestPriceAsync(string origin, string destination, string departDate)
+        private async Task<FlightSearchResponse> GetLowestPriceAsync(string origin, string destination, string departDate)
         {
             try
             {
@@ -50,19 +59,26 @@ namespace CheapestTickets.Server.Services
                 {
                     string url = $"https://api.travelpayouts.com/aviasales/v3/prices_for_dates?origin={origin}&destination={destination}&departure_at={departDate}&currency=rub&sorting=price&direct=false&limit=1&token={apiToken}";
                     var response = await client.GetAsync(url);
-                    response.EnsureSuccessStatusCode();
                     string json = await response.Content.ReadAsStringAsync();
                     var data = JsonSerializer.Deserialize<AviasalesResponse>(json);
                     if (data.data == null || data.data.Length == 0)
                     {
-                        return new FlightSearchResult(false);
+                        return new FlightSearchResponse("Не удалось получить данные о рейсе");
                     }
-                    return new FlightSearchResult(true, data.data[0]);
+                    return new FlightSearchResponse(data.data[0]);
                 }
             }
-            catch
+            catch (HttpRequestException)
             {
-                return new FlightSearchResult(false);
+                return new FlightSearchResponse("Не удалось подключиться к API");
+            }
+            catch (TaskCanceledException)
+            {
+                return new FlightSearchResponse("Время ожидания ответа от API истекло");
+            }
+            catch (Exception ex) 
+            {
+                return new FlightSearchResponse(ex.Message);
             }
         }
 
