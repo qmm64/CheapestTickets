@@ -1,6 +1,6 @@
 ﻿using CheapestTickets.Server.Models;
-using CheapestTickets.Server.Services;
 using CheapestTickets.Server.Models.Responses;
+using CheapestTickets.Server.Services;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -11,69 +11,68 @@ namespace CheapestTickets.Server.Networking
     {
         private readonly TcpClient _client;
         private readonly TicketCalculator _calculator;
-        private readonly string _userId;
-        private readonly string _clientIp;
+        private readonly Guid _clientId;
 
         public ClientHandler(TcpClient client, TicketCalculator calculator)
         {
             _client = client;
             _calculator = calculator;
-            _userId = Guid.NewGuid().ToString();
-            _clientIp = _client.Client.RemoteEndPoint?.ToString() ?? "неизвестный IP";
+            _clientId = Guid.NewGuid(); // уникальный ID для каждого клиента
         }
 
         public async Task ProcessAsync()
         {
+            string clientIp = (_client.Client.RemoteEndPoint as System.Net.IPEndPoint)?.Address.ToString() ?? "Unknown";
+            Logger.Info($"Подключился клиент: {clientIp}", $"CLIENT {_clientId}");
             using NetworkStream stream = _client.GetStream();
-            Logger.Info("Клиент подключился", $"CLIENT {_userId} [{_clientIp}]");
+            using var cts = new CancellationTokenSource();
             try
             {
                 string json = await ReceiveMessageAsync(stream);
-                Logger.Info("Начато получение запроса от клиента", $"CLIENT {_userId} [{_clientIp}]");
                 var request = JsonSerializer.Deserialize<FlightRequest>(json);
                 if (request?.Routes == null || request.Routes.Count == 0)
                 {
-                    await SendErrorAsync(stream, "Маршруты не переданы на сервер");
-                    Logger.Warning("Ошибка: маршруты не переданы", $"CLIENT {_userId} [{_clientIp}]");
+                    await SendErrorAsync(stream, AppError.Internal("Маршруты не переданы на сервер"));
                     return;
                 }
-                Logger.Info($"Начат расчёт стоимости для {request.Routes.Count} маршрутов", $"CLIENT {_userId} [{_clientIp}]");
-                var calculateResponse = await _calculator.CalculatePricesAsync(request.Routes, request.Days);
-                if (!string.IsNullOrEmpty(calculateResponse.Error))
+                Logger.Info($"Начат расчёт стоимости для {request.Routes.Count} маршрутов", $"CLIENT {_clientId}", clientIp);
+                var calculateResponse = await _calculator.CalculatePricesAsync(request.Routes, request.Days, cts.Token);
+                if (calculateResponse.Error != null)
                 {
                     await SendErrorAsync(stream, calculateResponse.Error);
-                    Logger.Warning($"Ошибка при расчёте: {calculateResponse.Error}", $"CLIENT {_userId} [{_clientIp}]");
                     return;
                 }
-                var validPrices = calculateResponse.prices.Where(p => p.Value >= 0).ToList();
-                if (validPrices.Count == 0)
+                var validPrices = calculateResponse.prices?.Where(p => p.Value >= 0).ToList() ?? new List<KeyValuePair<string, decimal>>();
+                if (!validPrices.Any())
                 {
-                    await SendErrorAsync(stream, "Нет доступных маршрутов по заданным параметрам");
-                    Logger.Warning("Не найдено подходящих маршрутов", $"CLIENT {_userId} [{_clientIp}]");
+                    await SendErrorAsync(stream, AppError.NoData("Нет доступных маршрутов по заданным параметрам"));
                     return;
                 }
+
                 var minPair = validPrices.OrderBy(p => p.Value).First();
                 var response = new FlightResponse
                 {
                     MinPrice = minPair.Value,
                     MinDate = minPair.Key
                 };
+
                 if (request.IncludeAllPrices)
-                {
                     response.Prices = calculateResponse.prices;
-                }
+
                 string responseJson = JsonSerializer.Serialize(response);
                 await SendMessageAsync(stream, responseJson);
-                Logger.Info($"Отправлен результат: мин. цена {minPair.Value} руб ({minPair.Key})", $"CLIENT {_userId} [{_clientIp}]");
+
+                Logger.Info($"Отправлен результат: мин. цена {minPair.Value} руб ({minPair.Key})",
+                            $"CLIENT {_clientId}", clientIp);
             }
             catch (Exception ex)
             {
-                Logger.Error($"Ошибка обработки клиента: {ex.Message}", $"CLIENT {_userId} [{_clientIp}]");
+                Logger.Info($"Ошибка обработки клиента: {ex.Message}", $"CLIENT {_clientId}", clientIp);
             }
             finally
             {
                 _client.Close();
-                Logger.Info("Клиент отключился", $"CLIENT {_userId} [{_clientIp}]");
+                Logger.Info("Клиент отключился", $"CLIENT {_clientId}", clientIp);
             }
         }
 
@@ -90,10 +89,11 @@ namespace CheapestTickets.Server.Networking
             await stream.WriteAsync(data, 0, data.Length);
         }
 
-        private async Task SendErrorAsync(NetworkStream stream, string error)
+        private async Task SendErrorAsync(NetworkStream stream, AppError error)
         {
             var response = new FlightResponse { Error = error };
-            await SendMessageAsync(stream, JsonSerializer.Serialize(response));
+            string responseJson = JsonSerializer.Serialize(response);
+            await SendMessageAsync(stream, responseJson);
         }
     }
 }

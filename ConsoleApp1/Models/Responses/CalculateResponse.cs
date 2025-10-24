@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace CheapestTickets.Server.Models.Responses
 {
-    internal record CalculateResponse(Dictionary<string,decimal>? prices,string Error="");
+    internal record CalculateResponse(Dictionary<string,decimal>? prices,AppError Error=null);
 }

@@ -32,7 +32,7 @@ namespace CheapestTickets.Server.Networking
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error($"Ошибка при приёме клиента: {ex.Message}", "SYSTEM");
+                    Logger.Info($"Ошибка при приёме клиента: {ex.Message}");
                 }
             }
         }
