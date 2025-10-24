@@ -9,32 +9,34 @@ namespace CheapestTickets.Client
         {
             var routes = new List<FlightRoute>
             {
-                new FlightRoute("OVB", "SEL", new DateOnly(2025, 9, 27)),
-                new FlightRoute("SEL", "OSA", new DateOnly(2025, 9, 30)),
-                new FlightRoute("TYO", "BJS", new DateOnly(2025, 10, 10)),
-                new FlightRoute("BJS", "OVB", new DateOnly(2025, 10, 13))
+                new FlightRoute("OVB", "SEL", new DateOnly(2025, 10, 25)),
+                new FlightRoute("SEL", "OSA", new DateOnly(2025, 10, 28)),
+                new FlightRoute("TYO", "BJS", new DateOnly(2025, 11, 7)),
+                new FlightRoute("BJS", "OVB", new DateOnly(2025, 11, 10))
             };
 
             //var routes = FlightBuilder.AddFlights();
-
-            var countOfDays = RequestHandler.GetCount("Введите количество дней");
-            Services.Client client = new();
-            var response = await client.SendRequestAsync(new FlightRequest(routes, countOfDays));
-            if (response == null)
+            while (true)
             {
-                Console.WriteLine("Не удалось получить ответ от сервера");
-            }
-            else if (!String.IsNullOrEmpty(response.Error))
-            {
-                Console.WriteLine($"Сервер вернул ошибку: {response.Error}");
-            }
-            else if (response.MinPrice == null || response.MinDate == null)
-            {
-                Console.WriteLine("Не получилось найти подходящие маршруты");
-            }
-            else
-            {
-                Console.WriteLine($"Дешевле всего вылетать {response.MinDate} - {response.MinPrice}");
+                var countOfDays = RequestHandler.GetCount("Введите количество дней");
+                Services.Client client = new();
+                var response = await client.SendRequestAsync(new FlightRequest(routes, countOfDays));
+                if (response == null)
+                {
+                    Console.WriteLine("Не удалось получить ответ от сервера");
+                }
+                else if (!String.IsNullOrEmpty(response.Error))
+                {
+                    Console.WriteLine($"Сервер вернул ошибку: {response.Error}");
+                }
+                else if (response.MinPrice == null || response.MinDate == null)
+                {
+                    Console.WriteLine("Не получилось найти подходящие маршруты");
+                }
+                else
+                {
+                    Console.WriteLine($"Дешевле всего вылетать {response.MinDate} - {response.MinPrice}");
+                }
             }
         }
     }
