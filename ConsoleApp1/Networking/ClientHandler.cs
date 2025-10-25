@@ -12,18 +12,19 @@ namespace CheapestTickets.Server.Networking
         private readonly TcpClient _client;
         private readonly TicketCalculator _calculator;
         private readonly Guid _clientId;
+        private readonly string _clientIp;
 
-        public ClientHandler(TcpClient client, TicketCalculator calculator)
+        public ClientHandler(TcpClient client, TicketCalculator calculator, string clientIp)
         {
             _client = client;
             _calculator = calculator;
-            _clientId = Guid.NewGuid(); // уникальный ID для каждого клиента
+            _clientId = Guid.NewGuid();
+            _clientIp = clientIp;
         }
 
         public async Task ProcessAsync()
         {
-            string clientIp = (_client.Client.RemoteEndPoint as System.Net.IPEndPoint)?.Address.ToString() ?? "Unknown";
-            Logger.Info($"Подключился клиент: {clientIp}", $"CLIENT {_clientId}");
+            Logger.Info($"Подключился клиент: {_clientIp}", $"CLIENT {_clientId}");
             using NetworkStream stream = _client.GetStream();
             using var cts = new CancellationTokenSource();
             try
@@ -35,7 +36,7 @@ namespace CheapestTickets.Server.Networking
                     await SendErrorAsync(stream, AppError.Internal("Маршруты не переданы на сервер"));
                     return;
                 }
-                Logger.Info($"Начат расчёт стоимости для {request.Routes.Count} маршрутов", $"CLIENT {_clientId}", clientIp);
+                Logger.Info($"Начат расчёт стоимости для {request.Routes.Count} маршрутов", $"CLIENT {_clientId}", _clientIp);
                 var calculateResponse = await _calculator.CalculatePricesAsync(request.Routes, request.Days, cts.Token);
                 if (calculateResponse.Error != null)
                 {
@@ -63,16 +64,16 @@ namespace CheapestTickets.Server.Networking
                 await SendMessageAsync(stream, responseJson);
 
                 Logger.Info($"Отправлен результат: мин. цена {minPair.Value} руб ({minPair.Key})",
-                            $"CLIENT {_clientId}", clientIp);
+                            $"CLIENT {_clientId}", _clientIp);
             }
             catch (Exception ex)
             {
-                Logger.Info($"Ошибка обработки клиента: {ex.Message}", $"CLIENT {_clientId}", clientIp);
+                Logger.Info($"Ошибка обработки клиента: {ex.Message}", $"CLIENT {_clientId}", _clientIp);
             }
             finally
             {
                 _client.Close();
-                Logger.Info("Клиент отключился", $"CLIENT {_clientId}", clientIp);
+                Logger.Info("Клиент отключился", $"CLIENT {_clientId}", _clientIp);
             }
         }
 

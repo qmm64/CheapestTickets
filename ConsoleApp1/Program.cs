@@ -6,7 +6,7 @@ namespace CheapestTickets.Server
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Запуск сервера...");
+            Logger.Info("Запуск сервера...");
             string apiToken = "713190d0855f15d4b2a9dd08b6417da9";
             var calculator = new TicketCalculator(apiToken);
             int port = 5000;
