@@ -23,7 +23,8 @@ namespace CheapestTickets.Server.Services
                 var result = await CalculatePriceOfDateDeparture(shiftedRoutes, prices, token);
                 if (result != null)
                 {
-                    return new CalculateResponse(null, result);
+                    //return new CalculateResponse(null, result);
+                    Console.WriteLine(result);
                 }
             }
             return new CalculateResponse(prices);
