@@ -1,4 +1,4 @@
-﻿using CheapestTickets.Client.Models;
+﻿using CheapestTickets.Shared.Models;
 
 namespace CheapestTickets.Client.Core
 {

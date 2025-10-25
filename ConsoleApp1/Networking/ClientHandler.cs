@@ -1,9 +1,8 @@
-﻿using CheapestTickets.Server.Models;
-using CheapestTickets.Server.Models.Responses;
-using CheapestTickets.Server.Services;
+﻿using CheapestTickets.Server.Services;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+using CheapestTickets.Shared.Models;
 
 namespace CheapestTickets.Server.Networking
 {
@@ -24,7 +23,7 @@ namespace CheapestTickets.Server.Networking
             try
             {
                 string json = await ReceiveMessageAsync(_client.Stream);
-                var request = JsonSerializer.Deserialize<FlightRequest>(json);
+                var request = JsonSerializer.Deserialize<CheapestTickets.Shared.Models.FlightRequest>(json);
                 if (request?.Routes == null || request.Routes.Count == 0)
                 {
                     await SendErrorAsync(_client.Stream, AppError.Internal("Маршруты не переданы на сервер"));

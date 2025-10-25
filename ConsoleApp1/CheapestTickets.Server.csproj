@@ -13,4 +13,9 @@
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="140.0.7339.8200" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CheapestTickets.Client\CheapestTickets.Client.csproj" />
+    <ProjectReference Include="..\CheapestTickets.Shared\CheapestTickets.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

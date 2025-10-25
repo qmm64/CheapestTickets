@@ -1,6 +1,7 @@
-﻿namespace CheapestTickets.Server.Models.Responses
+﻿
+namespace CheapestTickets.Shared.Models
 {
-    internal class AppError
+    public class AppError
     {
         public ErrorType Type { get; }
         public string Message { get; }
@@ -11,8 +12,8 @@
             Message = message;
         }
 
-        public static AppError None() 
-        { 
+        public static AppError None()
+        {
             return new AppError(ErrorType.None, string.Empty);
         }
         public static AppError ApiUnavailable(string msg)

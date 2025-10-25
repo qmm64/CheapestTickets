@@ -1,7 +1,7 @@
 ﻿
-namespace CheapestTickets.Server.Models
+namespace CheapestTickets.Shared.Models
 {
-    internal class FlightRoute
+    public class FlightRoute
     {
         public string Origin { get; set; }
         public string Destination { get; set; }
@@ -12,5 +12,6 @@ namespace CheapestTickets.Server.Models
             this.Destination = Destination;
             this.Date = Date;
         }
+        public FlightRoute() { }
     }
 }

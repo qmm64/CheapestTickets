@@ -1,7 +1,7 @@
-﻿using CheapestTickets.Client.Models;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+using CheapestTickets.Shared.Models;
 
 namespace CheapestTickets.Client.Services
 {

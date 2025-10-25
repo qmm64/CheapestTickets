@@ -1,7 +1,7 @@
 ﻿
-namespace CheapestTickets.Client.Models
+namespace CheapestTickets.Shared.Models
 {
-    internal class FlightRequest
+    public class FlightRequest
     {
         public List<FlightRoute> Routes { get; set; }
         public int Days { get; set; }
