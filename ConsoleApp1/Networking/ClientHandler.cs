@@ -9,44 +9,38 @@ namespace CheapestTickets.Server.Networking
 {
     internal class ClientHandler
     {
-        private readonly TcpClient _client;
+        private readonly ClientContext _client;
         private readonly TicketCalculator _calculator;
-        private readonly Guid _clientId;
-        private readonly string _clientIp;
 
-        public ClientHandler(TcpClient client, TicketCalculator calculator, string clientIp)
+        public ClientHandler(ClientContext client, TicketCalculator calculator)
         {
             _client = client;
             _calculator = calculator;
-            _clientId = Guid.NewGuid();
-            _clientIp = clientIp;
         }
 
         public async Task ProcessAsync()
         {
-            Logger.Info($"Подключился клиент: {_clientIp}", $"CLIENT {_clientId}");
-            using NetworkStream stream = _client.GetStream();
-            using var cts = new CancellationTokenSource();
+            Logger.Info($"Подключился клиент: {_client.Ip}", $"CLIENT {_client.Id}");
             try
             {
-                string json = await ReceiveMessageAsync(stream);
+                string json = await ReceiveMessageAsync(_client.Stream);
                 var request = JsonSerializer.Deserialize<FlightRequest>(json);
                 if (request?.Routes == null || request.Routes.Count == 0)
                 {
-                    await SendErrorAsync(stream, AppError.Internal("Маршруты не переданы на сервер"));
+                    await SendErrorAsync(_client.Stream, AppError.Internal("Маршруты не переданы на сервер"));
                     return;
                 }
-                Logger.Info($"Начат расчёт стоимости для {request.Routes.Count} маршрутов", $"CLIENT {_clientId}", _clientIp);
-                var calculateResponse = await _calculator.CalculatePricesAsync(request.Routes, request.Days, cts.Token);
+                Logger.Info($"Начат расчёт стоимости для {request.Routes.Count} маршрутов", $"CLIENT {_client.Id}", _client.Ip);
+                var calculateResponse = await _calculator.CalculatePricesAsync(request.Routes, request.Days, _client.TokenSource.Token);
                 if (calculateResponse.Error != null)
                 {
-                    await SendErrorAsync(stream, calculateResponse.Error);
+                    await SendErrorAsync(_client.Stream, calculateResponse.Error);
                     return;
                 }
                 var validPrices = calculateResponse.prices?.Where(p => p.Value >= 0).ToList() ?? new List<KeyValuePair<string, decimal>>();
                 if (!validPrices.Any())
                 {
-                    await SendErrorAsync(stream, AppError.NoData("Нет доступных маршрутов по заданным параметрам"));
+                    await SendErrorAsync(_client.Stream, AppError.NoData("Нет доступных маршрутов по заданным параметрам"));
                     return;
                 }
 
@@ -61,19 +55,19 @@ namespace CheapestTickets.Server.Networking
                     response.Prices = calculateResponse.prices;
 
                 string responseJson = JsonSerializer.Serialize(response);
-                await SendMessageAsync(stream, responseJson);
+                await SendMessageAsync(_client.Stream, responseJson);
 
                 Logger.Info($"Отправлен результат: мин. цена {minPair.Value} руб ({minPair.Key})",
-                            $"CLIENT {_clientId}", _clientIp);
+                            $"CLIENT {_client.Id}", _client.Ip);
             }
             catch (Exception ex)
             {
-                Logger.Info($"Ошибка обработки клиента: {ex.Message}", $"CLIENT {_clientId}", _clientIp);
+                Logger.Info($"Ошибка обработки клиента: {ex.Message}", $"CLIENT {_client.Id}", _client.Ip);
             }
             finally
             {
-                _client.Close();
-                Logger.Info("Клиент отключился", $"CLIENT {_clientId}", _clientIp);
+                _client.Cancel();
+                Logger.Info("Клиент отключился", $"CLIENT {_client.Id}", _client.Ip);
             }
         }
 

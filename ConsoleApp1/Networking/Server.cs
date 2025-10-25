@@ -24,9 +24,8 @@ namespace CheapestTickets.Server.Networking
             {
                 try
                 {
-                    TcpClient client = await listener.AcceptTcpClientAsync();
-                    string clientIp = client.Client.RemoteEndPoint?.ToString() ?? "неизвестный IP";
-                    Logger.Info($"Подключился клиент: {clientIp}", "SYSTEM");
+                    ClientContext client = new(await listener.AcceptTcpClientAsync());
+                    Logger.Info($"Подключился клиент: {client.Ip}", "SYSTEM");
                     var handler = new ClientHandler(client, _calculator,clientIp);
                     _ = handler.ProcessAsync();
                 }
