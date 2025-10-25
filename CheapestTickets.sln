@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheapestTickets.Server", "C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheapestTickets.Client", "CheapestTickets.Client\CheapestTickets.Client.csproj", "{8AFD1861-FCAF-4F09-B61A-3A419558B96A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheapestTickets.Shared", "CheapestTickets.Shared\CheapestTickets.Shared.csproj", "{C2A1EA9B-7FA6-4BB2-8133-07256243ED69}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{8AFD1861-FCAF-4F09-B61A-3A419558B96A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8AFD1861-FCAF-4F09-B61A-3A419558B96A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8AFD1861-FCAF-4F09-B61A-3A419558B96A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2A1EA9B-7FA6-4BB2-8133-07256243ED69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2A1EA9B-7FA6-4BB2-8133-07256243ED69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2A1EA9B-7FA6-4BB2-8133-07256243ED69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2A1EA9B-7FA6-4BB2-8133-07256243ED69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
