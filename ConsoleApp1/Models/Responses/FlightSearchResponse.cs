@@ -11,7 +11,7 @@ internal class FlightSearchResponse
     {
         IsSuccess = true;
         Ticket = ticket;
-        Error = AppError.None;
+        Error = AppError.None();
     }
 
     public FlightSearchResponse(AppError error)
