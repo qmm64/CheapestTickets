@@ -1,5 +1,6 @@
 ﻿using CheapestTickets.Client.Models;
 using CheapestTickets.Client.Services;
+using CheapestTickets.Shared.Models;
 
 namespace CheapestTickets.Client.Core
 {

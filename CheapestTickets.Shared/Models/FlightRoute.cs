@@ -1,5 +1,5 @@
 ﻿
-namespace CheapestTickets.Client.Models
+namespace CheapestTickets.Shared.Models
 {
     public class FlightRoute
     {

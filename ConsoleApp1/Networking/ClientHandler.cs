@@ -25,7 +25,7 @@ namespace CheapestTickets.Server.Networking
             try
             {
                 string json = await ReceiveMessageAsync(_client.Stream);
-                var request = JsonSerializer.Deserialize<FlightRequest>(json);
+                var request = JsonSerializer.Deserialize<CheapestTickets.Shared.Models.FlightRequest>(json);
                 if (request?.Routes == null || request.Routes.Count == 0)
                 {
                     await SendErrorAsync(_client.Stream, AppError.Internal("Маршруты не переданы на сервер"));
