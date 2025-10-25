@@ -1,8 +1,7 @@
-﻿using CheapestTickets.Shared.Models;
-
-namespace CheapestTickets.Client.Models
+﻿
+namespace CheapestTickets.Shared.Models
 {
-    internal class FlightResponse
+    public class FlightResponse
     {
         public Dictionary<string, decimal>? Prices { get; set; }
         public decimal? MinPrice { get; set; }
