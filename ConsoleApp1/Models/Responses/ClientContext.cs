@@ -18,5 +18,10 @@ internal class ClientContext
         TokenSource = new CancellationTokenSource();
     }
 
-    public void Cancel() => TokenSource.Cancel();
+    public void Cancel()
+    {
+        TokenSource.Cancel();
+        Stream.Close();
+        TcpClient.Close();
+    }
 }

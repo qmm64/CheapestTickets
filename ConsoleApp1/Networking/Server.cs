@@ -26,7 +26,7 @@ namespace CheapestTickets.Server.Networking
                 {
                     ClientContext client = new(await listener.AcceptTcpClientAsync());
                     Logger.Info($"Подключился клиент: {client.Ip}", "SYSTEM");
-                    var handler = new ClientHandler(client, _calculator,clientIp);
+                    var handler = new ClientHandler(client, _calculator);
                     _ = handler.ProcessAsync();
                 }
                 catch (Exception ex)
