@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace CheapestTickets.Server.Services
 {
     internal static class Logger

@@ -1,5 +1,4 @@
-﻿using CheapestTickets.Server.Models;
-using CheapestTickets.Server.Models.Responses;
+﻿using CheapestTickets.Server.Models.Responses;
 using System.Text.Json;
 using CheapestTickets.Shared.Models;
 

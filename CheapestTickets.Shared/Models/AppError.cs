@@ -1,4 +1,5 @@
-﻿namespace CheapestTickets.Shared.Models
+﻿
+namespace CheapestTickets.Shared.Models
 {
     public class AppError
     {

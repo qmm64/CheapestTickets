@@ -1,6 +1,4 @@
-﻿using CheapestTickets.Server.Models;
-using CheapestTickets.Server.Models.Responses;
-using CheapestTickets.Server.Services;
+﻿using CheapestTickets.Server.Services;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;

@@ -1,5 +1,4 @@
 ﻿using CheapestTickets.Server.Models;
-using CheapestTickets.Server.Models.Responses;
 using CheapestTickets.Shared.Models;
 
 internal class FlightSearchResponse
