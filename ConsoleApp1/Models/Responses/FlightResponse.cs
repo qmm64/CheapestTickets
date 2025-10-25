@@ -1,5 +1,6 @@
 ﻿using CheapestTickets.Server.Models.Responses;
 using System.Collections.Generic;
+using CheapestTickets.Shared.Models;
 
 namespace CheapestTickets.Server.Models
 {

@@ -1,5 +1,4 @@
-﻿
-using CheapestTickets.Server.Models.Responses;
+﻿using CheapestTickets.Shared.Models;
 
 namespace CheapestTickets.Client.Models
 {
@@ -8,6 +7,6 @@ namespace CheapestTickets.Client.Models
         public Dictionary<string, decimal>? Prices { get; set; }
         public decimal? MinPrice { get; set; }
         public string? MinDate { get; set; }
-        public AppError? Error { get; set; }
+        public AppError Error { get; set; }
     }
 }
