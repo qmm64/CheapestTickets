@@ -5,6 +5,12 @@ namespace CheapestTickets.Server.Services
     internal static class Logger
     {
         private static readonly object _lock = new();
+        private static AppDbContext? _db;
+
+        public static void Init(AppDbContext db)
+        {
+            _db = db;
+        }
 
         public static void Info(string message, string source = "SYSTEM", string? ip = null)
         {
@@ -12,24 +18,26 @@ namespace CheapestTickets.Server.Services
             {
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 string ipPart = ip != null ? $" [{ip}]" : "";
-                string logMessage = $"[{timestamp}] [{source}]{ipPart} {message}";
-                Console.WriteLine(logMessage);
-                try
+                Console.WriteLine($"[{timestamp}] [{source}]{ipPart} {message}");
+            }
+
+            try
+            {
+                if (_db != null)
                 {
-                    using var db = new AppDbContext();
-                    db.Logs.Add(new LogEntry
+                    _db.Logs.Add(new LogEntry
                     {
-                        Timestamp = DateTime.Now,
+                        Timestamp = DateTime.UtcNow,
                         Source = source,
-                        Ip = ip,
+                        ClientIp = ip,
                         Message = message
                     });
-                    db.SaveChanges();
+                    _db.SaveChanges();
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[LOGGER ERROR] Не удалось записать лог в БД: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LOGGER ERROR] Не удалось записать лог в БД: {ex.GetBaseException().Message}");
             }
         }
     }

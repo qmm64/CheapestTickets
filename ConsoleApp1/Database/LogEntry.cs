@@ -1,12 +1,14 @@
-﻿
+﻿using System;
+
 namespace CheapestTickets.Server.Database
 {
-    internal class LogEntry
+    public class LogEntry
     {
         public int Id { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string Source { get; set; } = string.Empty;
-        public string? Ip { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+        public string Source { get; set; } = "SYSTEM";
+        public string? ClientId { get; set; }
+        public string? ClientIp { get; set; }
         public string Message { get; set; } = string.Empty;
     }
 }
