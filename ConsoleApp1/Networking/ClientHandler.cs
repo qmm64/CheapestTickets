@@ -19,17 +19,17 @@ namespace CheapestTickets.Server.Networking
 
         public async Task ProcessAsync()
         {
-            Logger.Info($"Подключился клиент: {_client.Ip}", $"CLIENT {_client.Id}");
+            Logger.Info($"Подключился клиент: {_client.Ip}", Logger.Sources.CLIENT, _client);
             try
             {
                 string json = await ReceiveMessageAsync(_client.Stream);
-                var request = JsonSerializer.Deserialize<CheapestTickets.Shared.Models.FlightRequest>(json);
+                var request = JsonSerializer.Deserialize<FlightRequest>(json);
                 if (request?.Routes == null || request.Routes.Count == 0)
                 {
                     await SendErrorAsync(_client.Stream, AppError.Internal("Маршруты не переданы на сервер"));
                     return;
                 }
-                Logger.Info($"Начат расчёт стоимости для {request.Routes.Count} маршрутов", $"CLIENT {_client.Id}", _client.Ip);
+                Logger.Info($"Начат расчёт стоимости для {request.Routes.Count} маршрутов",Logger.Sources.CLIENT, _client);
                 var calculateResponse = await _calculator.CalculatePricesAsync(request.Routes, request.Days, _client.TokenSource.Token);
                 if (calculateResponse.Error != null)
                 {
@@ -56,17 +56,16 @@ namespace CheapestTickets.Server.Networking
                 string responseJson = JsonSerializer.Serialize(response);
                 await SendMessageAsync(_client.Stream, responseJson);
 
-                Logger.Info($"Отправлен результат: мин. цена {minPair.Value} руб ({minPair.Key})",
-                            $"CLIENT {_client.Id}", _client.Ip);
+                Logger.Info($"Отправлен результат: мин. цена {minPair.Value} руб ({minPair.Key})",Logger.Sources.CLIENT, _client);
             }
             catch (Exception ex)
             {
-                Logger.Info($"Ошибка обработки клиента: {ex.Message}", $"CLIENT {_client.Id}", _client.Ip);
+                Logger.Info($"Ошибка обработки клиента: {ex.Message}", Logger.Sources.CLIENT, _client);
             }
             finally
             {
                 _client.Cancel();
-                Logger.Info("Клиент отключился", $"CLIENT {_client.Id}", _client.Ip);
+                Logger.Info("Клиент отключился", Logger.Sources.CLIENT, _client);
             }
         }
 

@@ -19,13 +19,13 @@ namespace CheapestTickets.Server.Networking
         {
             TcpListener listener = new TcpListener(IPAddress.Any, _port);
             listener.Start();
-            Logger.Info($"Сервер запущен на порту {_port}", "SYSTEM");
+            Logger.Info($"Сервер запущен на порту {_port}");
             while (true)
             {
                 try
                 {
                     ClientContext client = new(await listener.AcceptTcpClientAsync());
-                    Logger.Info($"Подключился клиент: {client.Ip}", "SYSTEM");
+                    Logger.Info($"Подключился клиент: {client.Ip}");
                     var handler = new ClientHandler(client, _calculator);
                     _ = handler.ProcessAsync();
                 }
