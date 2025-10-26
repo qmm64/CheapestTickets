@@ -1,4 +1,5 @@
-﻿
+﻿using CheapestTickets.Server.Database;
+
 namespace CheapestTickets.Server.Services
 {
     internal static class Logger
@@ -11,7 +12,24 @@ namespace CheapestTickets.Server.Services
             {
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 string ipPart = ip != null ? $" [{ip}]" : "";
-                Console.WriteLine($"[{timestamp}] [{source}]{ipPart} {message}");
+                string logMessage = $"[{timestamp}] [{source}]{ipPart} {message}";
+                Console.WriteLine(logMessage);
+                try
+                {
+                    using var db = new AppDbContext();
+                    db.Logs.Add(new LogEntry
+                    {
+                        Timestamp = DateTime.Now,
+                        Source = source,
+                        Ip = ip,
+                        Message = message
+                    });
+                    db.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[LOGGER ERROR] Не удалось записать лог в БД: {ex.Message}");
+                }
             }
         }
     }
