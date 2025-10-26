@@ -9,7 +9,6 @@ namespace CheapestTickets.Server.Models.Database
         public Guid ClientId { get; set; }
         public string? IpAddress { get; set; }
         public DateTime RequestTime { get; set; } = DateTime.UtcNow;
-        public string RoutesJson { get; set; } = string.Empty;
         public int Days { get; set; }
         public decimal? MinPrice { get; set; }
         public string? MinDate { get; set; }

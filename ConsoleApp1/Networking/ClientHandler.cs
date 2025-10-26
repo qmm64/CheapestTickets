@@ -29,7 +29,7 @@ namespace CheapestTickets.Server.Networking
                     await SendErrorAsync(_client.Stream, AppError.Internal("Маршруты не переданы на сервер"));
                     return;
                 }
-                Logger.Info($"Начат расчёт стоимости для {request.Routes.Count} маршрутов",Logger.Sources.CLIENT, _client);
+                Logger.Info($"Начат расчёт стоимости для {request.Routes.Count} маршрутов на {request.Days} дней",Logger.Sources.CLIENT, _client);
                 var calculateResponse = await _calculator.CalculatePricesAsync(request.Routes, request.Days, _client.TokenSource.Token);
                 if (calculateResponse.Error != null)
                 {
@@ -51,12 +51,15 @@ namespace CheapestTickets.Server.Networking
                 };
 
                 if (request.IncludeAllPrices)
+                {
                     response.Prices = calculateResponse.prices;
+                }
 
                 string responseJson = JsonSerializer.Serialize(response);
                 await SendMessageAsync(_client.Stream, responseJson);
 
                 Logger.Info($"Отправлен результат: мин. цена {minPair.Value} руб ({minPair.Key})",Logger.Sources.CLIENT, _client);
+                RequestLogger.LogRequest(_client, request.Days, response);
             }
             catch (Exception ex)
             {
