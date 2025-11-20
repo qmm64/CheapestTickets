@@ -15,7 +15,7 @@ namespace CheapestTickets.Server.Services
             _db = db;
         }
 
-        public static void LogRequest(ClientContext client, int days, FlightResponse flightResponse)
+        public static void LogRequest(ClientContext client, int days, long durationMs, FlightResponse flightResponse)
         {
             try
             {
@@ -28,6 +28,7 @@ namespace CheapestTickets.Server.Services
                         Days = days,
                         MinPrice = flightResponse.MinPrice,
                         MinDate = flightResponse.MinDate,
+                        DurationMs = durationMs,
                         Error = flightResponse.Error != null ? flightResponse.Error.Type.ToString() : "",
                     });
                     _db.SaveChanges();

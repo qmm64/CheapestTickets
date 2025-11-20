@@ -10,10 +10,10 @@ namespace CheapestTickets.Client.Core
 
             var routes = new List<FlightRoute>
             {
-                new FlightRoute("OVB", "SEL", new DateOnly(2025, 10, 25)),
-                new FlightRoute("SEL", "OSA", new DateOnly(2025, 10, 28)),
-                new FlightRoute("TYO", "BJS", new DateOnly(2025, 11, 7)),
-                new FlightRoute("BJS", "OVB", new DateOnly(2025, 11, 10))
+                new FlightRoute("OVB", "SEL", DateOnly.FromDateTime(DateTime.Now)),
+                new FlightRoute("SEL", "OSA", DateOnly.FromDateTime(DateTime.Now.AddDays(3))),
+                new FlightRoute("TYO", "BJS", DateOnly.FromDateTime(DateTime.Now.AddDays(13))),
+                new FlightRoute("BJS", "OVB", DateOnly.FromDateTime(DateTime.Now.AddDays(16)))
             };
 
             while (true) 

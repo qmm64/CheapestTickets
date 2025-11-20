@@ -12,6 +12,7 @@ namespace CheapestTickets.Server.Models.Database
         public int Days { get; set; }
         public decimal? MinPrice { get; set; }
         public string? MinDate { get; set; }
+        public long DurationMs { get; set; }
         public string? Error { get; set; }
     }
 }
