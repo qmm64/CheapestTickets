@@ -46,7 +46,8 @@ namespace CheapestTickets.Server.Services
         public enum Sources
         {
             SYSTEM,
-            CLIENT
+            CLIENT,
+            DATABASE
         }
     }
 }
