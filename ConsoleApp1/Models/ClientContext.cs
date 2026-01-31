@@ -19,8 +19,8 @@ internal class ClientContext
 
     public void Cancel()
     {
-        TokenSource.Cancel();
-        Stream.Close();
-        TcpClient.Close();
+        try { TokenSource.Cancel(); } catch { }
+        try { Stream.Close(); } catch { }
+        try { TcpClient.Close(); } catch { }
     }
 }
