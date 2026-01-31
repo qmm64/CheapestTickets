@@ -1,9 +1,11 @@
-﻿using CheapestTickets.Server.Services;
+﻿using CheapestTickets.Server.Models;
+using CheapestTickets.Server.Models.Responses;
+using CheapestTickets.Server.Services;
+using CheapestTickets.Shared.Models;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using CheapestTickets.Shared.Models;
-using System.Diagnostics;
 
 namespace CheapestTickets.Server.Networking
 {
@@ -20,49 +22,58 @@ namespace CheapestTickets.Server.Networking
 
         public async Task ProcessAsync()
         {
-            Logger.Info($"Подключился клиент: {_client.Ip}", Logger.Sources.CLIENT, _client);
-            var timer = Stopwatch.StartNew();
             try
             {
-                string json = await ReceiveMessageAsync(_client.Stream);
+                Logger.Info($"Клиент подключился: {_client.Ip}", Logger.Sources.CLIENT, _client);
+
+                string json = await ReceiveMessageAsync(_client.Stream, _client.TokenSource.Token);
                 var request = JsonSerializer.Deserialize<FlightRequest>(json);
-                if (request?.Routes == null || request.Routes.Count == 0)
+
+                if (request == null || request.Routes.Count == 0)
                 {
-                    await Error(_client.Stream,(request!=null ? request.Days : 0),timer, AppError.Internal("Маршруты не переданы на сервер"));
-                    return;
-                }
-                Logger.Info($"Начат расчёт стоимости для {request.Routes.Count} маршрутов на {request.Days} дней",Logger.Sources.CLIENT, _client);
-                var calculateResponse = await _calculator.CalculatePricesAsync(request.Routes, request.Days, _client.TokenSource.Token);
-                if (calculateResponse.Error != null)
-                {
-                    await Error(_client.Stream, request.Days, timer, calculateResponse.Error);
-                    return;
-                }
-                var validPrices = calculateResponse.prices?.Where(p => p.Value >= 0).ToList() ?? new List<KeyValuePair<string, decimal>>();
-                if (!validPrices.Any())
-                {
-                    await Error(_client.Stream, request.Days, timer, AppError.NoData("Нет доступных маршрутов по заданным параметрам"));
+                    await SendErrorAsync(new AppError(ErrorType.InvalidRequest,"Маршруты не переданы"), _client.TokenSource.Token);
                     return;
                 }
 
-                var minPair = validPrices.OrderBy(p => p.Value).First();
-                var response = new FlightResponse
+                Logger.Info($"Начат расчёт стоимости для {request.Routes.Count} маршрутов", Logger.Sources.CLIENT, _client);
+
+                var response = await _calculator.CalculatePricesAsync(
+                    request.Routes,
+                    request.Days,
+                    _client.TokenSource.Token
+                );
+
+                _client.TokenSource.Token.ThrowIfCancellationRequested();
+
+                if (response.Error != null)
                 {
-                    MinPrice = minPair.Value,
-                    MinDate = minPair.Key
+                    await SendErrorAsync(response.Error, _client.TokenSource.Token);
+                    return;
+                }
+
+                var valid = response.prices.Where(p => p.Value >= 0).ToList();
+                if (valid.Count == 0)
+                {
+                    await SendErrorAsync(new AppError(ErrorType.NoData,"Нет доступных маршрутов"), _client.TokenSource.Token);
+                    return;
+                }
+
+                var min = valid.OrderBy(p => p.Value).First();
+
+                var msg = new FlightResponse
+                {
+                    MinPrice = min.Value,
+                    MinDate = min.Key,
+                    Prices = request.IncludeAllPrices ? response.prices : null
                 };
 
-                if (request.IncludeAllPrices)
-                {
-                    response.Prices = calculateResponse.prices;
-                }
+                await SendMessageAsync(JsonSerializer.Serialize(msg), _client.TokenSource.Token);
 
-                string responseJson = JsonSerializer.Serialize(response);
-                await SendMessageAsync(_client.Stream, responseJson);
-
-                timer.Stop();
-                Logger.Info($"Отправлен результат: мин. цена {minPair.Value} руб ({minPair.Key})",Logger.Sources.CLIENT, _client);
-                RequestLogger.LogRequest(_client, request.Days,timer.ElapsedMilliseconds, response);
+                Logger.Info($"Отправлен результат: мин. цена {min.Value} руб ({min.Key})", Logger.Sources.CLIENT, _client);
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Info("Запрос отменён (клиент отключился)", Logger.Sources.CLIENT, _client);
             }
             catch (Exception ex)
             {
@@ -75,31 +86,60 @@ namespace CheapestTickets.Server.Networking
             }
         }
 
-        private async Task<string> ReceiveMessageAsync(NetworkStream stream)
+        private async Task<string> ReceiveMessageAsync(NetworkStream stream, CancellationToken token)
         {
-            byte[] buffer = new byte[4096];
-            int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            return Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            //byte[] buffer = new byte[4096];
+            //int bytes = await stream.ReadAsync(buffer, 0, buffer.Length, token);
+
+            //if (bytes == 0)
+            //{
+            //    throw new OperationCanceledException("Client disconnected");
+            //}
+
+            //return Encoding.UTF8.GetString(buffer, 0, bytes);
+
+            try
+            {
+                byte[] buffer = new byte[4096];
+                int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, token);
+
+                // Клиент корректно закрыл соединение
+                if (bytesRead == 0)
+                {
+                    _client.Cancel();
+                    throw new OperationCanceledException("Клиент отключился");
+                }
+
+                return Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            }
+            catch (Exception ex) when (ex is IOException or ObjectDisposedException)
+            {
+                _client.Cancel();
+                throw;
+            }
         }
 
-        private async Task SendMessageAsync(NetworkStream stream, string message)
+        private async Task SendMessageAsync(string message, CancellationToken token)
         {
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            await stream.WriteAsync(data, 0, data.Length);
+            //byte[] data = Encoding.UTF8.GetBytes(message);
+            //await _client.Stream.WriteAsync(data, 0, data.Length, token);
+
+            try
+            {
+                byte[] data = Encoding.UTF8.GetBytes(message);
+                await _client.Stream.WriteAsync(data, 0, data.Length, token);
+            }
+            catch (Exception ex) when (ex is IOException or ObjectDisposedException)
+            {
+                _client.Cancel();
+                throw;
+            }
         }
 
-        private async Task SendErrorAsync(NetworkStream stream,FlightResponse response)
+        private Task SendErrorAsync(AppError error, CancellationToken token)
         {
-            string responseJson = JsonSerializer.Serialize(response);
-            await SendMessageAsync(stream, responseJson);
-        }
-
-        private async Task Error(NetworkStream stream, int days, Stopwatch timer, AppError appError)
-        {
-            var response = new FlightResponse{ Error = appError };
-            timer.Stop();
-            RequestLogger.LogRequest(_client, days, timer.ElapsedMilliseconds, response);
-            await SendErrorAsync(stream, response);
+            var response = new FlightResponse { Error = error };
+            return SendMessageAsync(JsonSerializer.Serialize(response), token);
         }
     }
 }
